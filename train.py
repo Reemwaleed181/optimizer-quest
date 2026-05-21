@@ -198,6 +198,8 @@ def get_dataloaders(batch_size=64, dataset_name="mnist"):
             scale = len(train_dataset) / requested_size
             train_size = max(1, int(train_size * scale))
             val_size = max(1, len(train_dataset) - train_size)
+
+        train_dataset = limited_subset(train_dataset, train_size + val_size)
     else:
         train_size = 50000
         val_size = len(train_dataset) - train_size
