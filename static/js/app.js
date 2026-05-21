@@ -483,7 +483,7 @@ function benchmarkProtocol() {
     model,
     lossFunction,
     batchSz: 32,
-    epochs: 1,
+    epochs: 2,
     optimizers: [
       { name: 'SGD', lr: 0.05 },
       { name: 'Momentum', lr: 0.05 },
