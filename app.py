@@ -57,7 +57,7 @@ def apply_hosted_limits(epochs, batch_size):
     if not is_hosted_demo():
         return epochs, batch_size
 
-    return min(epochs, 1), min(batch_size, 32)
+    return min(epochs, 1), min(batch_size, 16)
 
 
 def run_training_job(optimizer_name, lr, epochs, batch_size, dataset_name, model_name, loss_name):

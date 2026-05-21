@@ -141,14 +141,6 @@ def get_dataset_limit(name, render_default):
     return None
 
 
-def is_hosted_demo():
-    return (
-        os.environ.get("HOSTED_DEMO", "").lower() == "true"
-        or os.environ.get("RENDER") == "true"
-        or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
-    )
-
-
 def limited_subset(dataset, size):
     if size is None or size >= len(dataset):
         return dataset
@@ -278,112 +270,6 @@ def evaluate(model, loader, criterion):
     return avg_loss, accuracy
 
 
-def hosted_demo_result(
-    optimizer_name,
-    lr,
-    epochs,
-    batch_size,
-    dataset_name,
-    model_name,
-    loss_name,
-    progress_callback=None
-):
-    optimizer_key = optimizer_name.lower()
-    model_key = model_name.lower()
-    dataset_key = dataset_name.lower()
-
-    optimizer_scores = {
-        "sgd": 0.74,
-        "momentum": 0.79,
-        "rmsprop": 0.82,
-        "adam": 0.86,
-        "adamw": 0.87
-    }
-    model_scores = {
-        "tinymlp": -0.08,
-        "simplecnn": 0.02,
-        "deepercnn": 0.07
-    }
-    dataset_scores = {
-        "mnist": 0.05,
-        "fashionmnist": -0.03,
-        "kmnist": -0.04
-    }
-
-    base_accuracy = optimizer_scores.get(optimizer_key, 0.8)
-    base_accuracy += model_scores.get(model_key, 0.0)
-    base_accuracy += dataset_scores.get(dataset_key, 0.0)
-    if lr >= 0.1:
-        base_accuracy -= 0.08
-    elif lr <= 0.0001:
-        base_accuracy -= 0.04
-
-    base_accuracy = max(0.45, min(base_accuracy, 0.94))
-    train_losses = []
-    train_accuracies = []
-    val_losses = []
-    val_accuracies = []
-    epoch_times = []
-    start_time = time.time()
-
-    for epoch in range(epochs):
-        epoch_start = time.time()
-        progress_ratio = (epoch + 1) / epochs
-        train_accuracy = (base_accuracy - 0.1 + 0.1 * progress_ratio) * 100
-        val_accuracy = (base_accuracy - 0.12 + 0.09 * progress_ratio) * 100
-        train_loss = max(0.08, 1.4 - base_accuracy - 0.35 * progress_ratio)
-        val_loss = max(0.1, train_loss + 0.05)
-
-        time.sleep(0.25)
-        epoch_time = round(time.time() - epoch_start, 3)
-        elapsed_time = round(time.time() - start_time, 2)
-
-        train_losses.append(round(train_loss, 4))
-        train_accuracies.append(round(train_accuracy, 2))
-        val_losses.append(round(val_loss, 4))
-        val_accuracies.append(round(val_accuracy, 2))
-        epoch_times.append(epoch_time)
-
-        if progress_callback:
-            progress_callback({
-                "current_epoch": epoch + 1,
-                "total_epochs": epochs,
-                "progress": round(progress_ratio * 100, 2),
-                "elapsed_time_seconds": elapsed_time,
-                "train_loss": round(train_loss, 4),
-                "train_accuracy": round(train_accuracy, 2),
-                "validation_loss": round(val_loss, 4),
-                "validation_accuracy": round(val_accuracy, 2),
-                "epoch_time_seconds": epoch_time
-            })
-
-    test_accuracy = max(35.0, min(val_accuracies[-1] - 1.2, 96.0))
-    test_loss = round(val_losses[-1] + 0.03, 4)
-    total_time = round(time.time() - start_time, 2)
-
-    return {
-        "optimizer": optimizer_name,
-        "dataset": dataset_name,
-        "model": model_name,
-        "loss_function": loss_name,
-        "learning_rate": lr,
-        "epochs": epochs,
-        "batch_size": batch_size,
-        "train_losses": train_losses,
-        "train_accuracies": train_accuracies,
-        "validation_losses": val_losses,
-        "validation_accuracies": val_accuracies,
-        "epoch_times": epoch_times,
-        "final_test_loss": test_loss,
-        "final_test_accuracy": round(test_accuracy, 2),
-        "final_train_loss": train_losses[-1] if train_losses else None,
-        "final_train_accuracy": train_accuracies[-1] if train_accuracies else None,
-        "final_validation_loss": val_losses[-1] if val_losses else None,
-        "final_validation_accuracy": val_accuracies[-1] if val_accuracies else None,
-        "training_time_seconds": total_time
-    }
-
-
 def train_model(
     optimizer_name="adam",
     lr=0.001,
@@ -394,18 +280,6 @@ def train_model(
     loss_name="crossentropy",
     progress_callback=None
 ):
-    if is_hosted_demo():
-        return hosted_demo_result(
-            optimizer_name=optimizer_name,
-            lr=lr,
-            epochs=epochs,
-            batch_size=batch_size,
-            dataset_name=dataset_name,
-            model_name=model_name,
-            loss_name=loss_name,
-            progress_callback=progress_callback
-        )
-
     train_loader, val_loader, test_loader = get_dataloaders(
         batch_size=batch_size,
         dataset_name=dataset_name
