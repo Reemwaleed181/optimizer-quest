@@ -4,7 +4,7 @@
 
 window.activeOpt = 'Adam';
 
-const API_BASE = window.location.protocol === 'file:' ? null : window.location.origin;
+const API_BASE = window.location.protocol === 'file:' ? null : '';
 
 const DATASET_INFO = {
   mnist: {
@@ -427,7 +427,7 @@ async function runTrainingOnce({ optimizer, dataset, model, lossFunction, lr, ep
   setArenaProgress(0);
   startElapsedClock();
 
-  const response = await fetch(`${API_BASE}/api/train`, {
+  const response = await fetch(apiPath('/api/train'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -448,7 +448,7 @@ async function runTrainingOnce({ optimizer, dataset, model, lossFunction, lr, ep
 
   while (true) {
     await sleep(900);
-    const statusResponse = await fetch(`${API_BASE}/api/train/status`);
+    const statusResponse = await fetch(apiPath('/api/train/status'));
     const statusData = await readJsonResponse(statusResponse, 'read training status');
     if (!statusResponse.ok || statusData.status !== 'success') {
       throw new Error('Could not read training status');
@@ -518,6 +518,10 @@ function sleep(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
 }
 
+function apiPath(path) {
+  return `${API_BASE}${path}`;
+}
+
 async function readJsonResponse(response, action) {
   const text = await response.text();
 
@@ -536,7 +540,7 @@ async function pollTrainingStatus(isActiveRun) {
   if (!API_BASE) return;
 
   try {
-    const response = await fetch(`${API_BASE}/api/train/status`);
+    const response = await fetch(apiPath('/api/train/status'));
     const data = await readJsonResponse(response, 'read training status');
     if (!response.ok || data.status !== 'success') return;
 
