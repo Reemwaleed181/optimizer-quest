@@ -334,7 +334,7 @@ function toggleTraining() {
 }
 
 async function startTraining() {
-  if (!API_BASE) {
+  if (API_BASE === null) {
     alert('Training requires the Flask server. Open http://127.0.0.1:5000/ instead of the HTML file.');
     return;
   }
@@ -364,7 +364,7 @@ async function startTraining() {
 }
 
 async function startOptimizerBenchmark() {
-  if (!API_BASE) {
+  if (API_BASE === null) {
     alert('Benchmarking requires the Flask server. Open http://127.0.0.1:5000/ instead of the HTML file.');
     return;
   }
@@ -537,7 +537,7 @@ async function readJsonResponse(response, action) {
 }
 
 async function pollTrainingStatus(isActiveRun) {
-  if (!API_BASE) return;
+  if (API_BASE === null) return;
 
   try {
     const response = await fetch(apiPath('/api/train/status'));
