@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Optimizer Quest</title>
+  <link rel="stylesheet" href="../static/css/style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <svg class="logo-svg" width="36" height="36" viewBox="0 0 36 36">
+      <defs>
+        <linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1a3a7a"/>
+          <stop offset="100%" stop-color="#2563eb"/>
+        </linearGradient>
+      </defs>
+      <circle cx="18" cy="18" r="17" fill="url(#lg1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <path d="M9 22 Q13 9 18 17 Q23 25 27 13" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="18" cy="17" r="3" fill="#fbbf24"/>
+      <circle cx="9" cy="22" r="2" fill="#60a5fa"/>
+      <circle cx="27" cy="13" r="2" fill="#60a5fa"/>
+    </svg>
+    <h1 class="site-title">Optimizer Quest</h1>
+  </div>
+
+  <div class="header-right">
+    <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+    <span class="header-badge" id="statusBadge">Ready</span>
+    <div class="elapsed-display" id="elapsedDisplay">
+      <span class="elapsed-label">Elapsed:</span>
+      <span class="elapsed-time" id="elapsedTime">—</span>
+    </div>
+    <button class="btn-start" id="startBtn">&#9658; Run Training</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar-left">
+    <section class="card">
+      <h2 class="card-title">Select Optimizer</h2>
+      <ul class="opt-list" id="optList">
+        <li class="opt-item" data-opt="SGD">
+          <div class="opt-dot"><div class="opt-inner"></div></div>
+          <div class="opt-info">
+            <span class="opt-name">SGD</span>
+            <span class="opt-sub">Stochastic Gradient Descent</span>
+          </div>
+          <span class="opt-color-bar" style="background:#60a5fa"></span>
+        </li>
+
+        <li class="opt-item" data-opt="Momentum">
+          <div class="opt-dot"><div class="opt-inner"></div></div>
+          <div class="opt-info">
+            <span class="opt-name">Momentum</span>
+            <span class="opt-sub">SGD + velocity accumulation</span>
+          </div>
+          <span class="opt-color-bar" style="background:#f472b6"></span>
+        </li>
+
+        <li class="opt-item" data-opt="RMSprop">
+          <div class="opt-dot"><div class="opt-inner"></div></div>
+          <div class="opt-info">
+            <span class="opt-name">RMSprop</span>
+            <span class="opt-sub">Adaptive learning rates</span>
+          </div>
+          <span class="opt-color-bar" style="background:#34d399"></span>
+        </li>
+
+        <li class="opt-item active" data-opt="Adam">
+          <div class="opt-dot"><div class="opt-inner"></div></div>
+          <div class="opt-info">
+            <span class="opt-name">Adam</span>
+            <span class="opt-sub">Momentum + RMSprop</span>
+          </div>
+          <span class="opt-color-bar" style="background:#fbbf24"></span>
+        </li>
+
+        <li class="opt-item" data-opt="AdamW">
+          <div class="opt-dot"><div class="opt-inner"></div></div>
+          <div class="opt-info">
+            <span class="opt-name">AdamW</span>
+            <span class="opt-sub">Adam + decoupled weight decay</span>
+          </div>
+          <span class="opt-color-bar" style="background:#a78bfa"></span>
+        </li>
+      </ul>
+      <a class="btn-code" id="showCodeBtn" href="#" target="_blank" rel="noopener noreferrer">View optimizer implementation on GitHub</a>
+    </section>
+
+    <section class="card settings-card">
+      <h2 class="card-title">Training Settings</h2>
+
+      <div class="set-group">
+        <label class="set-label">Dataset</label>
+        <select class="set-select" id="setDataset">
+          <option value="mnist" selected>MNIST</option>
+          <option value="fashionmnist">Fashion-MNIST</option>
+          <option value="kmnist">KMNIST</option>
+        </select>
+      </div>
+      <p class="setting-help" id="datasetHelp">Handwritten digits; easiest benchmark for optimizer comparison.</p>
+
+      <div class="set-group">
+        <label class="set-label">Model Architecture</label>
+        <select class="set-select" id="setModel">
+          <option value="tinymlp">Tiny MLP</option>
+          <option value="simplecnn" selected>Simple CNN</option>
+          <option value="deepercnn">Deeper CNN</option>
+        </select>
+      </div>
+      <p class="setting-help" id="modelHelp">Balanced CNN baseline; best default for all three datasets.</p>
+
+      <div class="set-group">
+        <label class="set-label">Learning Rate</label>
+        <select class="set-select" id="setLR">
+          <option value="0.0001">0.0001</option>
+          <option value="0.001" selected>0.001</option>
+          <option value="0.01">0.01</option>
+          <option value="0.05">0.05</option>
+          <option value="0.1">0.1</option>
+          <option value="0.5">0.5</option>
+        </select>
+      </div>
+      <p class="setting-help" id="lrHelp">0.001 is stable for Adam/AdamW; 0.5 is intentionally aggressive for comparison.</p>
+
+      <div class="set-group">
+        <label class="set-label">Batch Size</label>
+        <select class="set-select" id="setBatch">
+          <option value="64" selected>64</option>
+          <option value="128">128</option>
+          <option value="32">32</option>
+        </select>
+      </div>
+      <p class="setting-help" id="batchHelp">64 is a balanced mini-batch size for stable updates and reasonable speed.</p>
+
+      <div class="set-group">
+        <label class="set-label">Epochs</label>
+        <select class="set-select" id="setEpochs">
+          <option value="2" selected>2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <p class="setting-help" id="epochHelp">2 epochs is fast for a demo; use more epochs for clearer convergence curves.</p>
+
+      <div class="set-group">
+        <label class="set-label">Loss Function</label>
+        <select class="set-select" id="setLossFn">
+          <option value="crossentropy" selected>Cross-Entropy</option>
+          <option value="labelsmoothing">Label-Smoothed Cross-Entropy</option>
+          <option value="mse">MSE on Class Probabilities</option>
+        </select>
+      </div>
+      <p class="setting-help" id="lossHelp">Best default for 10-class classification with raw logits.</p>
+
+      <button class="btn-run" id="runBtn">&#9654; Run Training</button>
+      <button class="btn-benchmark" id="benchmarkBtn" type="button">Benchmark All Optimizers</button>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progFill" style="width:0%"></div>
+        </div>
+        <span class="progress-label" id="progLabel">0 / 2 epochs</span>
+      </div>
+    </section>
+  </aside>
+
+  <div class="center-col">
+    <section class="research-band">
+      <div class="research-copy">
+        <span class="eyebrow">Interactive academic demo</span>
+        <h2>Compare optimizer behavior on the same CNN training task</h2>
+        <p id="researchCopy">Run a controlled MNIST experiment and watch convergence speed, validation behavior, and final test performance update from the existing PyTorch backend.</p>
+      </div>
+      <div class="research-meta">
+        <div><span>Dataset</span><strong id="metaDataset">MNIST</strong></div>
+        <div><span>Model</span><strong id="metaModel">Simple CNN</strong></div>
+        <div><span>Objective</span><strong id="metaLoss">Cross-Entropy</strong></div>
+      </div>
+    </section>
+
+    <section class="benchmark-plan" id="benchmarkPlan" hidden>
+      <div>
+        <span class="eyebrow">Automatic benchmark protocol</span>
+        <h3 id="benchmarkTitle">Benchmarking all optimizers</h3>
+        <p id="benchmarkReason">Using a fast, fair configuration selected for stable comparison.</p>
+      </div>
+      <ol id="benchmarkSteps">
+        <li>Dataset: MNIST for fast baseline comparison.</li>
+        <li>Model: Simple CNN for balanced speed and accuracy.</li>
+        <li>Loss: Cross-Entropy because this is a 10-class task.</li>
+        <li>Each optimizer uses a recommended learning rate, then results are added to history.</li>
+      </ol>
+      <strong id="benchmarkStatus">Ready to start</strong>
+    </section>
+
+    <section class="card arena-card">
+      <div class="arena-header">
+        <span class="arena-diamond">&#9670;</span>
+        <h2 class="arena-title">Training Arena</h2>
+        <span class="arena-diamond">&#9670;</span>
+      </div>
+
+      <div class="arena-body">
+        <canvas id="arenaCanvas"></canvas>
+        <div class="arena-stats">
+          <div class="astat-block">
+            <span class="astat-label">Epoch</span>
+            <span class="astat-val" id="epochVal">0</span>
+            <span class="astat-dim">/ <span id="maxEpLabel">2</span></span>
+          </div>
+
+          <div class="astat-block">
+            <span class="astat-label">Loss</span>
+            <span class="astat-val loss-col" id="arenaLoss">—</span>
+          </div>
+
+          <div class="astat-block">
+            <span class="astat-label">Accuracy</span>
+            <span class="astat-val acc-col" id="arenaAcc">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="metric-strip">
+      <div class="metric-tile">
+        <span class="metric-label">Training Status</span>
+        <strong class="metric-value" id="centerStatus">Ready</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-label">Epoch Progress</span>
+        <strong class="metric-value" id="centerEpoch">0 / 2</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-label">Validation Accuracy</span>
+        <strong class="metric-value acc-col" id="centerValAcc">—</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-label">Test Accuracy</span>
+        <strong class="metric-value acc-col" id="centerTestAcc">—</strong>
+      </div>
+    </section>
+
+    <div class="charts-row">
+      <section class="card chart-card protocol-card">
+        <h3 class="chart-title">Experiment Protocol</h3>
+        <p class="chart-sub">Reproducible MNIST optimizer comparison</p>
+        <div class="protocol-grid">
+          <div class="protocol-row"><span>Task</span><strong>10-class digit classification</strong></div>
+          <div class="protocol-row"><span>Model</span><strong id="protocolModel">Simple CNN</strong></div>
+          <div class="protocol-row"><span>Split</span><strong>50k train / 10k validation / 10k test</strong></div>
+          <div class="protocol-row"><span>Loss</span><strong id="protocolLoss">Cross-Entropy</strong></div>
+        </div>
+      </section>
+
+      <section class="card chart-card final-card" id="finalCard">
+        <h3 class="chart-title">Final Result</h3>
+        <p class="chart-sub" id="finalSubtitle">Run training to generate a compact result story.</p>
+        <div class="final-score">
+          <span class="final-ring" id="finalRing">—</span>
+          <div>
+            <strong id="finalHeadline">Awaiting experiment</strong>
+            <p id="finalNarrative">The final panel will summarize test accuracy, validation gap, optimizer behavior, and total runtime.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card chart-card">
+        <h3 class="chart-title">Loss Over Time</h3>
+        <p class="chart-sub">Training loss per epoch</p>
+        <div class="chart-wrap">
+          <canvas id="lossChart" role="img" aria-label="Loss over training epochs">Loss curve.</canvas>
+        </div>
+      </section>
+
+      <section class="card chart-card">
+        <h3 class="chart-title">Optimizer Comparison</h3>
+        <p class="chart-sub">Theoretical characteristics</p>
+        <div class="chart-wrap">
+          <canvas id="radarChart" role="img" aria-label="Radar chart comparing optimizer attributes">Radar comparison.</canvas>
+        </div>
+      </section>
+    </div>
+
+    <section class="card history-card">
+      <div class="history-head">
+        <div>
+          <h3 class="chart-title">Experiment History</h3>
+          <p class="chart-sub">Compare completed runs in this session</p>
+        </div>
+        <div class="history-actions">
+          <div class="best-run" id="bestRunCard">
+            <span>Best run</span>
+            <strong>Awaiting results</strong>
+          </div>
+          <div class="history-buttons">
+            <button class="btn-history" id="exportHistoryBtn" type="button">Export CSV</button>
+            <button class="btn-history muted" id="resetHistoryBtn" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Dataset</th>
+              <th>Model</th>
+              <th>Optimizer</th>
+              <th>Loss</th>
+              <th>LR</th>
+              <th>Test Acc</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="runHistoryBody">
+            <tr><td colspan="8" class="history-empty">Run training to start comparing experiments.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <aside class="sidebar-right">
+    <section class="card perf-card">
+      <h2 class="card-title">Performance</h2>
+      <div class="perf-row"><span class="perf-label">Current Loss</span><span class="perf-val" id="perfLoss">—</span></div>
+      <div class="perf-row"><span class="perf-label">Best Loss</span><span class="perf-val highlight" id="perfBestLoss">—</span></div>
+      <div class="perf-row"><span class="perf-label">Accuracy</span><span class="perf-val" id="perfAcc">—</span></div>
+      <div class="perf-row"><span class="perf-label">Validation Loss</span><span class="perf-val loss-col" id="perfValLoss">—</span></div>
+      <div class="perf-row"><span class="perf-label">Validation Acc</span><span class="perf-val acc-col" id="perfValAcc">—</span></div>
+      <div class="perf-row"><span class="perf-label">Test Loss</span><span class="perf-val loss-col" id="perfTestLoss">—</span></div>
+      <div class="perf-row"><span class="perf-label">Test Acc</span><span class="perf-val acc-col" id="perfTestAcc">—</span></div>
+      <div class="perf-row"><span class="perf-label">Time / Epoch</span><span class="perf-val" id="perfTime">—</span></div>
+      <div class="perf-row"><span class="perf-label">Convergence</span><span class="perf-val badge" id="perfConv">—</span></div>
+    </section>
+
+    <section class="card tips-card">
+      <h2 class="card-title">Optimizer Info</h2>
+      <div class="opt-info-section">
+        <div class="opt-info-label">Description</div>
+        <p class="opt-info-text" id="optDescription">—</p>
+      </div>
+      <div class="opt-info-section">
+        <div class="opt-info-label">Update Rule</div>
+        <div class="opt-formula-box" id="optFormula">—</div>
+      </div>
+      <div class="opt-info-section">
+        <div class="opt-info-label">Hyperparameters</div>
+        <div class="opt-hyperparams" id="optHyperparams">—</div>
+      </div>
+      <div class="opt-info-section">
+        <div class="opt-info-label">Best Use Cases</div>
+        <div class="opt-usecases" id="optUseCases">—</div>
+      </div>
+    </section>
+
+    <section class="card dataset-card">
+      <h2 class="card-title" id="datasetTitle">Dataset: MNIST</h2>
+      <div class="dataset-stats">
+        <div class="ds-row"><span class="ds-label">Training Samples</span><span class="ds-val">50,000</span></div>
+        <div class="ds-row"><span class="ds-label">Validation Samples</span><span class="ds-val">10,000</span></div>
+        <div class="ds-row"><span class="ds-label">Test Samples</span><span class="ds-val">10,000</span></div>
+        <div class="ds-row"><span class="ds-label">Image Size</span><span class="ds-val">28×28</span></div>
+        <div class="ds-row"><span class="ds-label">Classes</span><span class="ds-val">10 (0–9)</span></div>
+      </div>
+      <p class="dataset-desc" id="datasetDesc">Classic handwritten digit dataset. Grayscale images of digits 0-9, commonly used as a benchmark for image classification. This demo trains on 50,000 images, validates on 10,000 held-out training images, and reports final test performance on the official 10,000-image test split.</p>
+    </section>
+
+    <section class="card exp-summary-card">
+      <h2 class="card-title">Experiment Summary</h2>
+      <div class="exp-grid">
+        <div class="exp-row"><span class="exp-label">Optimizer</span><span class="exp-val" id="expOpt">—</span></div>
+        <div class="exp-row"><span class="exp-label">Dataset</span><span class="exp-val" id="expDataset">—</span></div>
+        <div class="exp-row"><span class="exp-label">Model</span><span class="exp-val" id="expModel">—</span></div>
+        <div class="exp-row"><span class="exp-label">Loss</span><span class="exp-val" id="expLossFn">—</span></div>
+        <div class="exp-row"><span class="exp-label">Learning Rate</span><span class="exp-val" id="expLR">—</span></div>
+        <div class="exp-row"><span class="exp-label">Batch Size</span><span class="exp-val" id="expBatch">—</span></div>
+        <div class="exp-row"><span class="exp-label">Epochs</span><span class="exp-val" id="expEpochs">—</span></div>
+        <div class="exp-row"><span class="exp-label">Total Time</span><span class="exp-val" id="expTotalTime">—</span></div>
+        <div class="exp-row"><span class="exp-label">Train Acc</span><span class="exp-val acc-col" id="expTrainAcc">—</span></div>
+        <div class="exp-row"><span class="exp-label">Validation Acc</span><span class="exp-val acc-col" id="expValAcc">—</span></div>
+        <div class="exp-row"><span class="exp-label">Test Acc</span><span class="exp-val acc-col" id="expAcc">—</span></div>
+        <div class="exp-row"><span class="exp-label">Test Loss</span><span class="exp-val loss-col" id="expLoss">—</span></div>
+      </div>
+    </section>
+
+    <section class="card tradeoff-card">
+      <h2 class="card-title">Trade-off Insights</h2>
+      <div class="tradeoff-items" id="tradeoffItems">
+        <div class="tradeoff-item">
+          <span class="tradeoff-icon">Speed</span>
+          <div class="tradeoff-content">
+            <span class="tradeoff-title">Speed vs Accuracy</span>
+            <span class="tradeoff-desc">SGD is slower but more interpretable; Adam converges faster but may overfit.</span>
+          </div>
+        </div>
+        <div class="tradeoff-item">
+          <span class="tradeoff-icon">Gen</span>
+          <div class="tradeoff-content">
+            <span class="tradeoff-title">Generalization</span>
+            <span class="tradeoff-desc">AdamW often generalizes better than Adam due to proper weight decay.</span>
+          </div>
+        </div>
+        <div class="tradeoff-item">
+          <span class="tradeoff-icon">LR</span>
+          <div class="tradeoff-content">
+            <span class="tradeoff-title">Learning Rate Sensitivity</span>
+            <span class="tradeoff-desc">SGD requires careful LR tuning; adaptive methods are more robust.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card lb-card">
+      <h2 class="card-title">Leaderboard</h2>
+      <p class="lb-subtitle">Best accuracy per optimizer</p>
+      <ul class="lb-list" id="lbList">
+        <li class="lb-empty">Run optimizers to compare</li>
+      </ul>
+    </section>
+  </aside>
+</main>
+
+<script src="../static/js/nn.js"></script>
+<script src="../static/js/optimizers.js"></script>
+<script src="../static/js/datasets.js"></script>
+<script src="../static/js/charts.js"></script>
+<script src="../static/js/arena.js"></script>
+<script src="../static/js/app.js"></script>
+
+</body>
+</html>
