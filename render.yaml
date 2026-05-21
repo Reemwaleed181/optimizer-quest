@@ -6,6 +6,8 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --workers 1 --threads 2 --bind 0.0.0.0:$PORT app:app
     envVars:
+      - key: HOSTED_DEMO
+        value: true
       - key: TRAIN_SUBSET_SIZE
         value: 1000
       - key: VAL_SUBSET_SIZE

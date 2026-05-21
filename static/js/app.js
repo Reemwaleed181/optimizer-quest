@@ -798,7 +798,7 @@ function updateExperimentContext() {
   setText('datasetHelp', dataset.help);
   setText('modelHelp', model.help);
   setText('datasetTitle', `Dataset: ${dataset.label}`);
-  setText('datasetDesc', dataset.desc + ' Each run uses 50,000 training samples, 10,000 validation samples, and 10,000 test samples.');
+  setText('datasetDesc', dataset.desc + ' Local runs use the full dataset split; hosted demos may use a smaller fast subset.');
   setText('metaDataset', dataset.label);
   setText('metaModel', model.label);
   setText('protocolModel', model.label);
