@@ -135,7 +135,7 @@ def get_dataset_limit(name, render_default):
     if configured_size is not None:
         return configured_size
 
-    if os.environ.get("RENDER") == "true":
+    if os.environ.get("RENDER") == "true" or os.environ.get("RAILWAY_ENVIRONMENT"):
         return render_default
 
     return None
@@ -185,9 +185,9 @@ def get_dataloaders(batch_size=64, dataset_name="mnist"):
         transform=transform
     )
 
-    configured_train_size = get_dataset_limit("TRAIN_SUBSET_SIZE", 5000)
-    configured_val_size = get_dataset_limit("VAL_SUBSET_SIZE", 1000)
-    configured_test_size = get_dataset_limit("TEST_SUBSET_SIZE", 1000)
+    configured_train_size = get_dataset_limit("TRAIN_SUBSET_SIZE", 1000)
+    configured_val_size = get_dataset_limit("VAL_SUBSET_SIZE", 200)
+    configured_test_size = get_dataset_limit("TEST_SUBSET_SIZE", 200)
 
     if configured_train_size or configured_val_size:
         train_size = configured_train_size or 50000

@@ -441,7 +441,7 @@ async function runTrainingOnce({ optimizer, dataset, model, lossFunction, lr, ep
     })
   });
 
-  const data = await response.json();
+  const data = await readJsonResponse(response, 'start training');
   if (!response.ok || data.status !== 'success') {
     throw new Error(data.message || 'Training failed');
   }
@@ -449,7 +449,7 @@ async function runTrainingOnce({ optimizer, dataset, model, lossFunction, lr, ep
   while (true) {
     await sleep(900);
     const statusResponse = await fetch(`${API_BASE}/api/train/status`);
-    const statusData = await statusResponse.json();
+    const statusData = await readJsonResponse(statusResponse, 'read training status');
     if (!statusResponse.ok || statusData.status !== 'success') {
       throw new Error('Could not read training status');
     }
@@ -478,8 +478,8 @@ function benchmarkProtocol() {
     dataset: 'mnist',
     model: 'simplecnn',
     lossFunction: 'crossentropy',
-    batchSz: 128,
-    epochs: 2,
+    batchSz: 32,
+    epochs: 1,
     optimizers: [
       { name: 'SGD', lr: 0.05 },
       { name: 'Momentum', lr: 0.05 },
@@ -518,12 +518,26 @@ function sleep(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
 }
 
+async function readJsonResponse(response, action) {
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch (err) {
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+      throw new Error(`The server returned an HTML error page while trying to ${action}. Check the hosting logs for the real backend error.`);
+    }
+
+    throw new Error(`Could not parse the server response while trying to ${action}.`);
+  }
+}
+
 async function pollTrainingStatus(isActiveRun) {
   if (!API_BASE) return;
 
   try {
     const response = await fetch(`${API_BASE}/api/train/status`);
-    const data = await response.json();
+    const data = await readJsonResponse(response, 'read training status');
     if (!response.ok || data.status !== 'success') return;
 
     const state = data.state || {};

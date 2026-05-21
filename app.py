@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from flask import Flask, render_template, jsonify, request
@@ -43,6 +44,20 @@ def update_training_state(**kwargs):
 def get_training_state():
     with training_lock:
         return dict(training_state)
+
+
+def is_hosted_demo():
+    return (
+        os.environ.get("RENDER") == "true"
+        or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
+    )
+
+
+def apply_hosted_limits(epochs, batch_size):
+    if not is_hosted_demo():
+        return epochs, batch_size
+
+    return min(epochs, 1), min(batch_size, 32)
 
 
 def run_training_job(optimizer_name, lr, epochs, batch_size, dataset_name, model_name, loss_name):
@@ -116,6 +131,7 @@ def api_train():
         lr = float(data.get("learning_rate", 0.001))
         epochs = int(data.get("epochs", 2))
         batch_size = int(data.get("batch_size", 64))
+        epochs, batch_size = apply_hosted_limits(epochs, batch_size)
 
         with training_lock:
             if training_state["status"] == "Training":
