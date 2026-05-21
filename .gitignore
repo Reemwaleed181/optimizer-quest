@@ -19,6 +19,10 @@ instance/
 htmlcov/
 
 data/
+models/
+checkpoints/
+runs/
+outputs/
 *.pt
 *.pth
 *.onnx
