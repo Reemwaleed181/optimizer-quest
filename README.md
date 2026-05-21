@@ -1,3 +1,12 @@
+---
+title: Optimizer Quest
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Optimizer Quest
 
 Optimizer Quest is an interactive Flask and PyTorch web application for comparing how different optimization algorithms behave during neural network training. The project turns a standard image-classification training loop into a visual experiment: users choose a dataset, model architecture, optimizer, learning rate, batch size, epoch count, and loss function, then watch training progress, metrics, charts, and run history update from the browser.
