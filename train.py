@@ -300,9 +300,9 @@ def hosted_demo_result(
         "adamw": 0.87
     }
     model_scores = {
-        "tinymlp": -0.04,
+        "tinymlp": -0.08,
         "simplecnn": 0.02,
-        "deepercnn": 0.04
+        "deepercnn": 0.07
     }
     dataset_scores = {
         "mnist": 0.05,

@@ -371,9 +371,9 @@ async function startOptimizerBenchmark() {
   if (running || benchmarkRunning) return;
 
   benchmarkRunning = true;
-  showBenchmarkPlan();
 
   const plan = benchmarkProtocol();
+  showBenchmarkPlan(plan);
   setBenchmarkStatus('Preparing fair benchmark settings...');
   setControlValue('setDataset', plan.dataset);
   setControlValue('setModel', plan.model);
@@ -474,10 +474,14 @@ async function runTrainingOnce({ optimizer, dataset, model, lossFunction, lr, ep
 }
 
 function benchmarkProtocol() {
+  const dataset = document.getElementById('setDataset')?.value || 'mnist';
+  const model = document.getElementById('setModel')?.value || 'simplecnn';
+  const lossFunction = document.getElementById('setLossFn')?.value || 'crossentropy';
+
   return {
-    dataset: 'mnist',
-    model: 'simplecnn',
-    lossFunction: 'crossentropy',
+    dataset,
+    model,
+    lossFunction,
     batchSz: 32,
     epochs: 1,
     optimizers: [
@@ -490,10 +494,25 @@ function benchmarkProtocol() {
   };
 }
 
-function showBenchmarkPlan() {
+function showBenchmarkPlan(plan) {
   const panel = document.getElementById('benchmarkPlan');
   if (panel) panel.hidden = false;
-  setText('benchmarkReason', 'Selected MNIST + Simple CNN + Cross-Entropy + batch size 128 + 2 epochs because it is fast, stable, and fair enough for comparing optimizer behavior in a live demo. Optimizers run sequentially instead of literally in parallel to avoid CPU/GPU overload and keep timing comparable.');
+
+  const dataset = DATASET_INFO[plan.dataset]?.label || plan.dataset;
+  const model = MODEL_INFO[plan.model]?.label || plan.model;
+  const loss = LOSS_CODE[plan.lossFunction]?.label || plan.lossFunction;
+
+  setText('benchmarkReason', `Using ${dataset} + ${model} + ${loss} with a hosted-safe batch size and epoch count. Optimizers run sequentially to avoid CPU and memory overload.`);
+
+  const steps = document.getElementById('benchmarkSteps');
+  if (steps) {
+    steps.innerHTML = `
+      <li>Dataset: ${dataset}.</li>
+      <li>Model: ${model}.</li>
+      <li>Loss: ${loss}.</li>
+      <li>Each optimizer uses a recommended learning rate, then results are added to history.</li>
+    `;
+  }
 }
 
 function setBenchmarkStatus(message) {
