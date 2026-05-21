@@ -197,5 +197,7 @@ For a fresh checkout, install dependencies from `requirements.txt` instead of co
 
 - The first dataset run may take longer because torchvision downloads the dataset files.
 - Training speed depends heavily on whether PyTorch can use CUDA or only CPU.
+- Hosted free-tier deployments use the real PyTorch training pipeline with a smaller dataset subset and one epoch to stay within memory limits.
+- Local runs can use the full dataset split and larger epoch counts.
 - The Flask app stores training state in memory, so restarting the server clears the current run state and browser history.
 - The app is designed for local experimentation and educational demos, not production model training.

@@ -185,9 +185,9 @@ def get_dataloaders(batch_size=64, dataset_name="mnist"):
         transform=transform
     )
 
-    configured_train_size = get_dataset_limit("TRAIN_SUBSET_SIZE", 1000)
-    configured_val_size = get_dataset_limit("VAL_SUBSET_SIZE", 200)
-    configured_test_size = get_dataset_limit("TEST_SUBSET_SIZE", 200)
+    configured_train_size = get_dataset_limit("TRAIN_SUBSET_SIZE", 256)
+    configured_val_size = get_dataset_limit("VAL_SUBSET_SIZE", 64)
+    configured_test_size = get_dataset_limit("TEST_SUBSET_SIZE", 64)
 
     if configured_train_size or configured_val_size:
         train_size = configured_train_size or 50000
