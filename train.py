@@ -1,8 +1,9 @@
+import os
 import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset, random_split
 from torchvision import datasets, transforms
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -116,6 +117,36 @@ DATASET_CONFIGS = {
 }
 
 
+def get_positive_int_env(name):
+    value = os.environ.get(name)
+    if not value:
+        return None
+
+    try:
+        parsed = int(value)
+    except ValueError:
+        return None
+
+    return parsed if parsed > 0 else None
+
+
+def get_dataset_limit(name, render_default):
+    configured_size = get_positive_int_env(name)
+    if configured_size is not None:
+        return configured_size
+
+    if os.environ.get("RENDER") == "true":
+        return render_default
+
+    return None
+
+
+def limited_subset(dataset, size):
+    if size is None or size >= len(dataset):
+        return dataset
+    return Subset(dataset, range(size))
+
+
 def get_model(name):
     name = name.lower()
 
@@ -154,13 +185,29 @@ def get_dataloaders(batch_size=64, dataset_name="mnist"):
         transform=transform
     )
 
-    train_size = 50000
-    val_size = len(train_dataset) - train_size
+    configured_train_size = get_dataset_limit("TRAIN_SUBSET_SIZE", 5000)
+    configured_val_size = get_dataset_limit("VAL_SUBSET_SIZE", 1000)
+    configured_test_size = get_dataset_limit("TEST_SUBSET_SIZE", 1000)
+
+    if configured_train_size or configured_val_size:
+        train_size = configured_train_size or 50000
+        val_size = configured_val_size or max(1, len(train_dataset) - train_size)
+        requested_size = train_size + val_size
+
+        if requested_size > len(train_dataset):
+            scale = len(train_dataset) / requested_size
+            train_size = max(1, int(train_size * scale))
+            val_size = max(1, len(train_dataset) - train_size)
+    else:
+        train_size = 50000
+        val_size = len(train_dataset) - train_size
+
     train_subset, val_subset = random_split(
         train_dataset,
         [train_size, val_size],
         generator=torch.Generator().manual_seed(42)
     )
+    test_dataset = limited_subset(test_dataset, configured_test_size)
 
     train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)

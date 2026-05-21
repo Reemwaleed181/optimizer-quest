@@ -358,7 +358,7 @@ async function startTraining() {
     });
   } catch (err) {
     console.error('Training error:', err);
-    alert('Training failed: Could not reach the Flask API. Make sure app.py is still running in the terminal, then refresh http://127.0.0.1:5000/.');
+    alert(`Training failed: ${err.message || 'Could not reach the Flask API.'}`);
     finishTrainingUi('Ready');
   }
 }
