@@ -698,6 +698,9 @@ function applyBackendResult(result) {
   setText('arenaAcc', `${testAcc.toFixed(2)}%`);
   setText('elapsedTime', formatSeconds(result.training_time_seconds));
 
+  renderLossSeries(losses.map(Number), valLosses.map(Number));
+  lastRenderedEpoch = Number(result.epochs || losses.length || 0);
+
   updateExperimentSummary(result);
   updateFinalResult(result);
   addRunHistory(result);

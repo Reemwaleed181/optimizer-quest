@@ -87,6 +87,24 @@ function pushLossPoint(epoch, trainLoss, testLoss) {
   lossChartInst.update('none');
 }
 
+function renderLossSeries(trainLosses, validationLosses) {
+  if (!lossChartInst) return;
+
+  lossChartInst.data.labels = [];
+  lossChartInst.data.datasets[0].data = [];
+  lossChartInst.data.datasets[1].data = [];
+
+  trainLosses.forEach((loss, index) => {
+    const epoch = index + 1;
+    const validationLoss = validationLosses[index] ?? loss;
+    lossChartInst.data.labels.push(epoch);
+    lossChartInst.data.datasets[0].data.push(Number(loss));
+    lossChartInst.data.datasets[1].data.push(Number(validationLoss));
+  });
+
+  lossChartInst.update('none');
+}
+
 function resetLossChart(activeOpt) {
   if (!lossChartInst) return;
   const col = OPT_INFO[activeOpt].color;
