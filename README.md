@@ -28,14 +28,20 @@ A concise, interactive web application for exploring and visualizing optimizatio
 - AdamW
 
 ## Screenshots
-![Main interface](images/main-interface.png)
+### Main Interface
 Main interface for selecting optimizers and configuring experiments.
 
-![Dashboard](images/dashboard.png)
+![Main interface](images/main-interface.png)
+
+### Dashboard
 Dashboard for monitoring loss curves and optimizer comparison.
 
-![Results view](images/results-view.png)
+![Dashboard](images/dashboard.png)
+
+### Results View
 Results view showing run history and trade-off insights.
+
+![Results view](images/results-view.png)
 
 ## Why Optimizer Quest?
 An experimental playground to build intuition about optimizer choice in deep learning. Rather than only consulting mathematical derivations, users can run controlled experiments under different optimizers and hyperparameters and observe real training traces, convergence rates, and generalization behavior.
