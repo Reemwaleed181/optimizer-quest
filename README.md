@@ -18,10 +18,7 @@ Live demo: https://huggingface.co/spaces/Reem181/optimizer-quest
 ## Supported Optimizers
 - Stochastic Gradient Descent (SGD)  
 - SGD with Momentum  
-- Nesterov Accelerated Gradient (NAG)  
-- AdaGrad  
-- RMSProp  
-- Adadelta  
+- RMSProp    
 - Adam  
 - AdamW
 
