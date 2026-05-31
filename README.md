@@ -1,8 +1,13 @@
 # Optimizer Quest
 
+## Project Description
+
+
 A concise, interactive web application for exploring and visualizing optimization algorithms used to train neural networks. Optimizer Quest turns a standard image‑classification training loop into a controlled visual experiment so students, researchers, and practitioners can compare optimizer behavior, convergence dynamics, and training stability in real time.
 
-Live demo: https://huggingface.co/spaces/Reem181/optimizer-quest
+## Live Demo
+
+[Try the live demo here](https://huggingface.co/spaces/Reem181/optimizer-quest)
 
 ---
 
@@ -24,13 +29,16 @@ Live demo: https://huggingface.co/spaces/Reem181/optimizer-quest
 
 ## Screenshots
 ![Main interface](images/main-interface.png)
+Main interface for selecting optimizers and configuring experiments.
 
 ![Dashboard](images/dashboard.png)
+Dashboard for monitoring loss curves and optimizer comparison.
 
 ![Results view](images/results-view.png)
+Results view showing run history and trade-off insights.
 
-## Short Project Description
-Optimizer Quest provides an experimental playground to build intuition about optimizer choice in deep learning. Rather than only consulting mathematical derivations, users can run identical experiments under different optimizers and hyperparameters and observe real training traces, convergence rates, and generalization behavior.
+## Why Optimizer Quest?
+An experimental playground to build intuition about optimizer choice in deep learning. Rather than only consulting mathematical derivations, users can run controlled experiments under different optimizers and hyperparameters and observe real training traces, convergence rates, and generalization behavior.
 
 ## Educational Purpose
 Designed primarily for pedagogy and exploratory research, Optimizer Quest helps users:
@@ -120,6 +128,12 @@ Notes:
 - Training performance depends on whether PyTorch has access to CUDA; CPU-only runs will be slower.
 - The Flask backend uses an in‑memory training state; restarting the server clears run history.
 
+## Hosted Demo Note
+
+The deployed version of Optimizer Quest uses a lightweight training configuration to reduce runtime and improve responsiveness on hosted platforms.
+
+This allows users to interact with the system more smoothly while still observing the key differences between optimizers in a practical and controlled setting.
+
 ## API Endpoints (overview)
 - `GET /` — Renders the main UI.  
 - `GET /api/health` — Backend health check.  
@@ -139,3 +153,4 @@ Optimizer Quest is intended as an educational tool and demonstration platform. I
 
 ## Author
 Reem Waleed Ahmed
+
